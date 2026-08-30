@@ -37,10 +37,10 @@ Instead of ranking vulnerabilities only by severity, the application combines mu
   - Insights
   - Import
 
-- **Authentication and per-user browser data**
-  - Demo login accounts are included.
-  - Users can register additional accounts.
-  - User data and application state are persisted in browser storage.
+- **Supabase authentication and per-user workspaces**
+  - Demo login accounts are included and are created in Supabase on first sign-in.
+  - Users can register additional accounts through Supabase Auth.
+  - Each authenticated user receives an isolated profile, workspace, and vulnerability dataset.
 
 - **Demo dataset**
   - The project includes sample vulnerability findings so the application can be demonstrated immediately.
@@ -209,24 +209,24 @@ The application seeds two demo accounts:
 
 These credentials are intended only for demonstration.
 
-## Data Storage
+## Supabase Configuration and Data Storage
 
-This version of Cyber ROI is primarily a **client-side application**.
+The application uses Supabase Auth and the tables defined in `supabase/schema.sql`. Before running or deploying it, create a `.env` file from `.env.example` and set the project URL and publishable anon key:
 
-User accounts, vulnerability data, selected settings, theme, budget, and application state are stored in the browser using:
+```bash
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
+```
 
-- `localStorage`
-- `sessionStorage`
+Run the SQL in `supabase/schema.sql` in the Supabase SQL Editor. The browser calls `supabase.auth.signUp()` for new users, and authenticated requests persist profiles, workspaces, and vulnerability records under the signed-in user ID. Because this is a static Vite application, the `VITE_*` values are embedded at build time; rebuild and redeploy after changing them.
 
-There is **no external database or production backend connected in this codebase**.
+The username-only UI maps a normalized username to an internal email-shaped identifier such as `new.user@cyber-roi.local`. In Supabase Auth, disable **Confirm email** for this demo flow, because users do not enter a deliverable email address. For production, replace the username field with a real email field and keep email confirmation enabled.
 
-The `backendConnected` state in the application is a UI/demo connection indicator; it does not establish a real server or database connection.
+The browser may retain a small list of usernames for convenience, but it is not the source of truth for authentication. The source of truth is Supabase Auth.
 
 ### Security Warning
 
-Do not use the included demo authentication system as production authentication.
-
-The password hashing mechanism is a lightweight demo implementation performed in the browser. It is not a substitute for secure server-side authentication, password hashing such as Argon2/bcrypt, sessions/JWTs with appropriate protections, access control, or a real database.
+The included demo credentials are not suitable for production. Use real user email addresses, strong password policies, email confirmation, appropriate redirect URLs, and server-side authorization policies before deploying this application for real users.
 
 ## Importing Vulnerability Data
 
